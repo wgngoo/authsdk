@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -49,4 +51,39 @@ func (c *AuthClient) Authenticate(username, password string) (string, error) {
 	}
 
 	return authResp.Token, nil
+}
+
+func (c *AuthClient) HttpNewRequest(path, token string) (string, error) {
+	// 定义请求的 URL
+	//path := "/getList"
+
+	// 创建一个新的 GET 请求
+	req, err := http.NewRequest("GET", c.BaseURL+path, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return "", err
+	}
+
+	// 设置请求头
+	req.Header.Set("Authorization", token)
+
+	// 发送请求
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// 读取响应
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return "", err
+	}
+	// 打印响应
+	fmt.Println("Response Status:", resp.Status)
+	fmt.Println("Response Body:", string(body))
+	return string(body), nil
 }
