@@ -54,20 +54,38 @@ func (c *AuthClient) Authenticate(username, password string) (string, error) {
 	return authResp.Token, nil
 }
 
-func (c *AuthClient) HttpNewRequest(path, token string) (*response.Result, error) {
+type UserInfo struct {
+	Username string
+	Number   string
+	Mail     string
+}
+
+func (c *AuthClient) HttpNewRequest(userInfo UserInfo, token string) (*response.Result, error) {
 	// 定义请求的 URL
 	//path := "/getList"
 	result := &response.Result{}
+	path := ""
 	// 创建一个新的 GET 请求
-	req, err := http.NewRequest("GET", c.BaseURL+path, nil)
+	if userInfo.Username != "" {
+		path = "/getUsePhoneFromMail"
+	}
+	if userInfo.Number != "" {
+		path = "/getUsePhoneFromNumber"
+	}
+	if userInfo.Mail != "" {
+		path = "/getUsePhoneFromMail"
+	}
+	reqBody, err := json.Marshal(userInfo)
+	if err != nil {
+		return result, err
+	}
+	req, err := http.NewRequest("POST", c.BaseURL+path, bytes.NewBuffer(reqBody))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return result, err
 	}
-
-	// 设置请求头
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", token)
-
 	// 发送请求
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -76,7 +94,6 @@ func (c *AuthClient) HttpNewRequest(path, token string) (*response.Result, error
 		return result, err
 	}
 	defer resp.Body.Close()
-
 	// 读取响应
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
