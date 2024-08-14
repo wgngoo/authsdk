@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/zhufuyi/sponge/pkg/gin/response"
 	"io/ioutil"
 	"net/http"
 )
@@ -53,15 +54,15 @@ func (c *AuthClient) Authenticate(username, password string) (string, error) {
 	return authResp.Token, nil
 }
 
-func (c *AuthClient) HttpNewRequest(path, token string) (string, error) {
+func (c *AuthClient) HttpNewRequest(path, token string) (*response.Result, error) {
 	// 定义请求的 URL
 	//path := "/getList"
-
+	result := &response.Result{}
 	// 创建一个新的 GET 请求
 	req, err := http.NewRequest("GET", c.BaseURL+path, nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return "", err
+		return result, err
 	}
 
 	// 设置请求头
@@ -72,7 +73,7 @@ func (c *AuthClient) HttpNewRequest(path, token string) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error sending request:", err)
-		return "", err
+		return result, err
 	}
 	defer resp.Body.Close()
 
@@ -80,10 +81,17 @@ func (c *AuthClient) HttpNewRequest(path, token string) (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
-		return "", err
+		return result, err
 	}
 	// 打印响应
 	fmt.Println("Response Status:", resp.Status)
 	fmt.Println("Response Body:", string(body))
-	return string(body), nil
+	//return result, err
+
+	err = json.Unmarshal(body, result)
+	if err != nil {
+		fmt.Println("parse result error,", err)
+		return result, err
+	}
+	return result, nil
 }
