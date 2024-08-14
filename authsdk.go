@@ -67,7 +67,7 @@ func (c *AuthClient) HttpNewRequest(userInfo UserInfo, token string) (*response.
 	path := ""
 	// 创建一个新的 GET 请求
 	if userInfo.Username != "" {
-		path = "/getUsePhoneFromMail"
+		path = "/getUsePhoneFromUserName"
 	}
 	if userInfo.Number != "" {
 		path = "/getUsePhoneFromNumber"
