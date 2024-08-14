@@ -55,9 +55,9 @@ func (c *AuthClient) Authenticate(username, password string) (string, error) {
 }
 
 type UserInfo struct {
-	Username string
-	Number   string
-	Mail     string
+	Username string `json:"username"`
+	Number   string `json:"number"`
+	Mail     string `json:"mail"`
 }
 
 func (c *AuthClient) HttpNewRequest(userInfo UserInfo, token string) (*response.Result, error) {
